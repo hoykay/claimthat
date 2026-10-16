@@ -1,0 +1,21 @@
+{
+  "shipment_id": "SHP-1048",
+  "po_number": "PO-55871",
+  "invoice_number": "INV-77102",
+  "packing_slip_number": "PS-44891",
+  "bol": "78493201",
+  "supplier": "ACME Industrial",
+  "carrier": "XPO Logistics",
+  "sku": "CT-48",
+  "description": "Industrial control module",
+  "expected_units": 320,
+  "invoiced_units": 320,
+  "received_units": 288,
+  "missing_units": 32,
+  "unit_price": 28.0,
+  "missing_units_claim": 896.0,
+  "damaged_cartons": 3,
+  "damaged_goods_estimate": 1944.0,
+  "total_claim": 2840.0,
+  "demo_note": "Synthetic test data for ClaimThat hackathon MVP. No real company or transaction is represented."
+}
