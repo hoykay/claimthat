@@ -155,23 +155,42 @@ export default function NewInspectionPage() {
 
 
     async function extractWithEvolus(file: File) {
-  const evolusForm = new FormData();
-  evolusForm.append("file", file);
+  let lastError = "";
 
-  const response = await fetch("/api/evolus-extract", {
-    method: "POST",
-    body: evolusForm,
-  });
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const evolusForm = new FormData();
+      evolusForm.append("file", file);
 
-  const result = await response.json();
+      const response = await fetch("/api/evolus-extract", {
+        method: "POST",
+        body: evolusForm,
+      });
 
-  if (!response.ok || !result.ok) {
-    throw new Error(
-      result.error || `Evolus extraction failed for ${file.name}`
-    );
+      const result = await response.json();
+
+      if (response.ok && result.ok) {
+        return result.data;
+      }
+
+      lastError =
+        result.error ||
+        `Evolus extraction failed for ${file.name}`;
+    } catch (error) {
+      lastError =
+        error instanceof Error
+          ? error.message
+          : `Evolus extraction failed for ${file.name}`;
+    }
+
+    if (attempt < 2) {
+      await new Promise((resolve) =>
+        setTimeout(resolve, 2500)
+      );
+    }
   }
 
-  return result.data;
+  throw new Error(lastError);
 }
 
 // Run sequentially to reduce AMD/Evolus rate-limit risk
