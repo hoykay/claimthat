@@ -46,6 +46,28 @@ The included demo shipment shows how ClaimThat handles both a quantity discrepan
 | AI Confidence | 98% |
 | Recommendation | Claim |
 
+## Run with Docker
+
+Build the image:
+
+```bash
+docker build -t claimthat .
+```
+
+Run ClaimThat with your local environment variables:
+
+```bash
+docker run --rm --env-file .env.local -p 3001:3000 claimthat
+```
+
+Then open:
+
+```text
+http://localhost:3001
+```
+
+The `.dockerignore` file excludes local secrets, build output, and dependencies from the Docker build context.
+
 ## Architecture
 
 ClaimThat combines three layers:
