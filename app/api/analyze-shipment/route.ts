@@ -127,6 +127,7 @@ async function analyzeImage(file: File) {
     const imageUrl =
       `data:${file.type || "image/jpeg"};base64,${base64}`;
 
+      const startedAt = Date.now();
     const response = await fetchAmdWithRetry(
       "https://developer.amd.com.cn/radeon/api/v1/chat/completions",
       {
@@ -197,16 +198,18 @@ Rules:
     lastSuccessfulAnalysis = analysis;
 
     return {
-      source: "live",
-      analysis,
-    };
+  source: "live",
+  latencyMs: Date.now() - startedAt,
+  analysis,
+};
   } catch (error) {
     console.error("Live AMD analysis unavailable:", error);
 
     return {
-      source: "cached",
-      analysis: lastSuccessfulAnalysis,
-    };
+  source: "cached",
+  latencyMs: null,
+  analysis: lastSuccessfulAnalysis,
+};
   }
 }
 
@@ -454,9 +457,11 @@ const daysLeft = Math.max(
 },
 
       amd: {
-        source: amd.source,
-        ...amd.analysis,
-      },
+  source: amd.source,
+  latencyMs: amd.latencyMs,
+  model: "DeepSeek-V4.1-Flash",
+  ...amd.analysis,
+},
 
       decision: {
         recommendation,

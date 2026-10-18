@@ -102,7 +102,10 @@ const displayFindings = findings.map((finding) => {
   if (finding.id === 1) {
     return {
       ...finding,
-      title: `${claimCalculation?.documentedDamagedCartons ?? 3} cartons damaged`,
+      title:
+  (claimCalculation?.documentedDamagedCartons ?? 0) > 0
+    ? `${claimCalculation?.documentedDamagedCartons ?? 0} cartons damaged`
+    : "Possible shipment damage detected",
     };
   }
 
