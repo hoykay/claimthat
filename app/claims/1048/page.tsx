@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import jsPDF from "jspdf";
+import GlobalSearch from "@/components/GlobalSearch";
 import { useClaimThatSettings } from "../../../data/useClaimThatSettings";
 import Link from "next/link";
 import {
@@ -20,7 +21,6 @@ import {
   Paperclip,
   Pencil,
   PlusCircle,
-  Search,
   Send,
   Settings,
 } from "lucide-react";
@@ -333,13 +333,7 @@ const [copied, setCopied] = useState(false);
       <div className="ml-[240px]">
         {/* Header */}
         <header className="sticky top-0 z-20 flex h-[74px] items-center justify-between border-b border-slate-200 bg-white/95 px-6 backdrop-blur">
-          <div className="flex h-11 w-[560px] items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4">
-            <Search size={18} className="text-slate-400" />
-            <input
-              className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
-              placeholder="Search cases, shipments, PO numbers..."
-            />
-          </div>
+          <GlobalSearch />
 
           <div className="flex items-center gap-4">
             <Bell size={19} className="text-slate-500" />

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import GlobalSearch from "@/components/GlobalSearch";
 import { useClaimThatSettings } from "../data/useClaimThatSettings";
 
 import {
@@ -17,7 +18,6 @@ import {
   Home,
   MoreVertical,
   PlusCircle,
-  Search,
   Settings,
   Users,
 } from "lucide-react";
@@ -210,13 +210,7 @@ export default function HomePage() {
       <div className="ml-[240px]">
         {/* Top bar */}
         <header className="sticky top-0 z-10 flex h-[74px] items-center justify-between border-b border-slate-200 bg-white/95 px-6 backdrop-blur">
-          <div className="flex h-11 w-[560px] items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4">
-            <Search size={18} className="text-slate-400" />
-            <input
-              className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
-              placeholder="Search shipments, suppliers, PO numbers, or cases..."
-            />
-          </div>
+          <GlobalSearch />
 
           <div className="flex items-center gap-4">
             <button className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100">

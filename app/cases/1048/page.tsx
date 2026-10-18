@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useClaimThatSettings } from "../../../data/useClaimThatSettings";
+import GlobalSearch from "@/components/GlobalSearch";
 import {
   AlertTriangle,
   Bell,
@@ -18,7 +19,6 @@ import {
   Link2,
   MoreVertical,
   PlusCircle,
-  Search,
   Send,
   Settings,
   ShieldCheck,
@@ -98,26 +98,78 @@ const matching = analysis?.matching;
 const claimCalculation = analysis?.claimCalculation;
 const amd = analysis?.amd;
 const decision = analysis?.decision;
+const packingSlipName =
+  decision?.recommendation === "HUMAN_REVIEW"
+    ? "PS-44892.pdf"
+    : "PS-44891.pdf";
+    const displayDocuments = documents.map((document) => {
+  if (document.type !== "Packing Slip") return document;
+
+  return {
+    ...document,
+    name: packingSlipName,
+    units: String(shipment?.receivedUnits ?? 288),
+    status:
+      matching?.poVsReceived === "MATCH"
+        ? "Matched"
+        : "Discrepancy",
+    evidence:
+      matching?.poVsReceived === "MATCH"
+        ? "—"
+        : "Photo 1, 2",
+  };
+});
 const displayFindings = findings.map((finding) => {
   if (finding.id === 1) {
+  const documentedDamage =
+    claimCalculation?.documentedDamagedCartons ?? 3;
+
+  if (documentedDamage === 0 && amd?.damage_detected) {
     return {
       ...finding,
-      title:
-  (claimCalculation?.documentedDamagedCartons ?? 0) > 0
-    ? `${claimCalculation?.documentedDamagedCartons ?? 0} cartons damaged`
-    : "Possible shipment damage detected",
+      title: "Possible shipment damage detected",
+      description:
+        "The shipment photo shows possible damage, but the receiving documents recorded no damage.",
+      confidence: "High",
     };
   }
+
+  return {
+    ...finding,
+    title: `${documentedDamage} cartons damaged`,
+    description:
+      "Visible impact damage is supported by the shipment evidence.",
+  };
+}
 
   if (finding.id === 2) {
-    return {
-      ...finding,
-      title: `${shipment?.missingUnits ?? 32} units missing`,
-      description: `Expected ${shipment?.expectedUnits ?? 320} units, received ${shipment?.receivedUnits ?? 288} units.`,
-    };
-  }
+  return {
+    ...finding,
+    title: `${shipment?.missingUnits ?? 32} units missing`,
+    description: `Expected ${shipment?.expectedUnits ?? 320} units, received ${shipment?.receivedUnits ?? 288} units.`,
+  };
+}
 
-  return finding;
+if (finding.id === 3) {
+  return {
+    ...finding,
+    title:
+      matching?.poVsReceived === "MATCH"
+        ? "Documents reconciled"
+        : "Document discrepancy",
+    description: `Packing slip shows ${
+      shipment?.receivedUnits ?? 288
+    } units vs. ${
+      shipment?.expectedUnits ?? 320
+    } on PO and invoice.`,
+    confidence:
+      matching?.poVsReceived === "MATCH"
+        ? "High"
+        : "Medium",
+  };
+}
+
+return finding;
 });
 const matchedChecks = analysis
   ? [
@@ -221,13 +273,7 @@ const boxStyle = {
       <div className="ml-[240px]">
         {/* Top bar */}
         <header className="sticky top-0 z-20 flex h-[74px] items-center justify-between border-b border-slate-200 bg-white/95 px-6 backdrop-blur">
-          <div className="flex h-11 w-[560px] items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4">
-            <Search size={18} className="text-slate-400" />
-            <input
-              className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
-              placeholder="Search cases, shipments, PO numbers..."
-            />
-          </div>
+          <GlobalSearch />
 
           <div className="flex items-center gap-4">
             <button className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100">
@@ -271,10 +317,22 @@ const boxStyle = {
                   Shipment SHP-1048
                 </h1>
 
-                <span className="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1.5 text-sm font-semibold text-red-600">
-                  <AlertTriangle size={15} />
-                  Claim Recommended
-                </span>
+                <span
+  className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold ${
+    decision?.recommendation === "HUMAN_REVIEW"
+      ? "bg-orange-50 text-orange-600"
+      : decision?.recommendation === "NO_CLAIM"
+      ? "bg-slate-100 text-slate-600"
+      : "bg-red-50 text-red-600"
+  }`}
+>
+  <AlertTriangle size={15} />
+  {decision?.recommendation === "HUMAN_REVIEW"
+    ? "Human Review"
+    : decision?.recommendation === "NO_CLAIM"
+    ? "No Claim"
+    : "Claim Recommended"}
+</span>
               </div>
 
               <div className="mt-2 flex items-center gap-3 text-sm text-slate-500">
@@ -304,10 +362,18 @@ const boxStyle = {
 >
   Review Decision
 </button>
-              <button className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white">
-                <Send size={17} />
-                Send to Carrier
-              </button>
+              {decision?.recommendation !== "HUMAN_REVIEW" && (
+  <button
+    type="button"
+    onClick={() => {
+      window.location.href = "/claims/1048";
+    }}
+    className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white"
+  >
+    <FileText size={17} />
+Prepare Claim Packet
+  </button>
+)}
             </div>
           </div>
 
@@ -526,7 +592,7 @@ const boxStyle = {
   ],
   [
     "Packing Slip",
-    "PS-44891",
+    packingSlipName,
     `Received: ${shipment?.receivedUnits ?? 288} units`,
     matching?.poVsReceived === "MATCH",
   ],
@@ -691,7 +757,7 @@ const boxStyle = {
                     </thead>
 
                     <tbody>
-                      {documents.map((document) => {
+                      {displayDocuments.map((document) => {
                         const linked =
   selectedFinding !== null &&
   document.type === "Packing Slip";

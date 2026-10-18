@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useClaimThatSettings } from "../../../data/useClaimThatSettings";
+import GlobalSearch from "@/components/GlobalSearch";
 import { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
@@ -16,7 +17,6 @@ import {
   FolderOpen,
   Home,
   PlusCircle,
-  Search,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -134,7 +134,7 @@ Do not recalculate the claim amount.
       setEvolusLive(true);
     } catch {
       setEvolusAnswer(
-        "Live Evolus review is temporarily unavailable. ClaimThat's deterministic decision remains available from the verified shipment evidence."
+        "Evolus live review is temporarily unavailable. ClaimThat has preserved the verified shipment evidence, deterministic calculation, and recommended next step so the case can still be reviewed safely."
       );
       setEvolusLive(false);
     } finally {
@@ -258,13 +258,7 @@ const savedDecision = analysis?.decision;
       <div className="ml-[240px]">
         {/* Header */}
         <header className="sticky top-0 z-20 flex h-[74px] items-center justify-between border-b border-slate-200 bg-white/95 px-6 backdrop-blur">
-          <div className="flex h-11 w-[560px] items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4">
-            <Search size={18} className="text-slate-400" />
-            <input
-              className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
-              placeholder="Search cases, shipments, PO numbers..."
-            />
-          </div>
+          <GlobalSearch />
 
           <div className="flex items-center gap-4">
             <Bell size={19} className="text-slate-500" />
@@ -468,7 +462,7 @@ const savedDecision = analysis?.decision;
             </div>
 
             <div className="text-xs text-slate-500">
-              AMD DeepSeek-V4.1-Flash
+              Evolus Claims Agent
             </div>
           </div>
         </div>
@@ -484,11 +478,11 @@ const savedDecision = analysis?.decision;
         }`}
       >
         {evolusLoading
-          ? "Analyzing..."
-          : evolusLive
-            ? "Live"
-            : "Fallback"}
-      </span>
+  ? "Analyzing..."
+  : evolusLive
+    ? "Live"
+    : "Verified fallback"}
+</span>
     </div>
 
     {evolusLoading ? (
@@ -528,7 +522,10 @@ body:
       },
       {
         number: 2,
-        title: "Quantity mismatch",
+        title:
+  (shipment?.missingUnits ?? 32) === 0
+    ? "Quantities reconciled"
+    : "Quantity mismatch",
         body: `Received ${
           shipment?.receivedUnits ?? 288
         } units vs. ${
@@ -916,7 +913,9 @@ body:
                           className="text-blue-600"
                         />
                         <span className="font-semibold">
-                          Escalate to Human Review
+                          {decision === "human-review"
+  ? "Human Review Requested"
+  : "Escalate to Human Review"}
                         </span>
                       </div>
 
@@ -925,8 +924,9 @@ body:
                   </button>
 
                   <p className="px-1 text-xs leading-5 text-slate-400">
-                    Send the case to a claims specialist for manual
-                    review.
+                    {decision === "human-review"
+  ? "This case is awaiting manual review."
+  : "Send the case to a claims specialist for manual review."}
                   </p>
                 </div>
 

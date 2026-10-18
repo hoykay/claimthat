@@ -13,7 +13,7 @@ async function askEvolus(content: string) {
     `https://api.evolus.ai/api/v1/agents/${agentId}/ask`,
     {
       method: "POST",
-      signal: AbortSignal.timeout(240000),
+      signal: AbortSignal.timeout(18000),
 
       headers: {
         "Content-Type": "application/json",

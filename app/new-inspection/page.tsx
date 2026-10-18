@@ -2,6 +2,7 @@
 
 import { useClaimThatSettings } from "../../data/useClaimThatSettings";
 import Link from "next/link";
+import GlobalSearch from "@/components/GlobalSearch";
 import { ChangeEvent, useRef, useState } from "react";
 import {
   Bell,
@@ -15,7 +16,6 @@ import {
   Home,
   Image as ImageIcon,
   PlusCircle,
-  Search,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -136,6 +136,108 @@ export default function NewInspectionPage() {
   function removePhoto(index: number) {
     setPhotos((current) => current.filter((_, i) => i !== index));
   }
+
+  function loadClaimDemo() {
+  const demoAnalysis = {
+    success: true,
+    demoMode: true,
+    shipment: {
+      shipmentId: "SHP-1048",
+      poNumber: "PO-55871",
+      expectedUnits: 320,
+      invoicedUnits: 320,
+      receivedUnits: 288,
+      missingUnits: 32,
+      unitPrice: 28,
+    },
+    matching: {
+      poVsInvoice: "MATCH",
+      poVsReceived: "MISMATCH",
+      invoiceVsReceived: "MISMATCH",
+    },
+    claimCalculation: {
+      missingValue: 896,
+      documentedDamagedCartons: 3,
+      damagedGoodsValue: 1944,
+      totalRecoverableAmount: 2840,
+      claimDeadline: "2026-04-20",
+      daysLeft: 6,
+    },
+    amd: {
+      source: "cached",
+      model: "DeepSeek-V4.1-Flash",
+      damage_detected: true,
+      damaged_cartons: 3,
+      description:
+        "Visible shipment damage is present on the cartons and outer packaging.",
+      confidence: 0.98,
+      bounding_box: [610, 115, 945, 610],
+    },
+    decision: {
+      recommendation: "CLAIM",
+      reason:
+        "The shipment is short by 32 units and the evidence also documents damaged cartons. A claim is recommended.",
+    },
+  };
+
+  localStorage.setItem(
+    "claimthat:lastAnalysis",
+    JSON.stringify(demoAnalysis)
+  );
+
+  window.location.href = "/cases/1048";
+}
+
+function loadHumanReviewDemo() {
+  const demoAnalysis = {
+    success: true,
+    demoMode: true,
+    shipment: {
+      shipmentId: "SHP-1048",
+      poNumber: "PO-55871",
+      expectedUnits: 320,
+      invoicedUnits: 320,
+      receivedUnits: 320,
+      missingUnits: 0,
+      unitPrice: 28,
+    },
+    matching: {
+      poVsInvoice: "MATCH",
+      poVsReceived: "MATCH",
+      invoiceVsReceived: "MATCH",
+    },
+    claimCalculation: {
+      missingValue: 0,
+      documentedDamagedCartons: 0,
+      damagedGoodsValue: 0,
+      totalRecoverableAmount: 0,
+      claimDeadline: "2026-04-20",
+      daysLeft: 6,
+    },
+    amd: {
+      source: "cached",
+      model: "DeepSeek-V4.1-Flash",
+      damage_detected: true,
+      damaged_cartons: 1,
+      description:
+        "Visible shipment damage is detected in the photo, but the receiving documents record no shortage or documented damage.",
+      confidence: 0.98,
+      bounding_box: [620, 100, 960, 600],
+    },
+    decision: {
+      recommendation: "HUMAN_REVIEW",
+      reason:
+        "The documents show all 320 units were received, while the shipment photo still shows possible damage. The conflicting evidence should be reviewed by a person.",
+    },
+  };
+
+  localStorage.setItem(
+    "claimthat:lastAnalysis",
+    JSON.stringify(demoAnalysis)
+  );
+
+  window.location.href = "/cases/1048";
+}
 
     async function analyzeShipment() {
   if (!po || !invoice || !packingSlip || photos.length === 0) {
@@ -329,13 +431,7 @@ if (!response.ok || !result.success) {
       <div className="ml-[240px]">
         {/* Header */}
         <header className="sticky top-0 z-10 flex h-[74px] items-center justify-between border-b border-slate-200 bg-white/95 px-6 backdrop-blur">
-          <div className="flex h-11 w-[560px] items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4">
-            <Search size={18} className="text-slate-400" />
-            <input
-              className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
-              placeholder="Search cases, shipments, PO numbers..."
-            />
-          </div>
+          <GlobalSearch />
 
           <div className="flex items-center gap-4">
             <button className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100">
@@ -674,6 +770,77 @@ if (!response.ok || !result.success) {
                   </div>
                 </div>
               </section>
+
+{/* Demo cases */}
+<section className="rounded-2xl border border-blue-200 bg-blue-50/50 p-5 shadow-sm">
+  <div className="flex items-start gap-3">
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white">
+      <Sparkles size={20} />
+    </div>
+
+    <div>
+      <h3 className="font-semibold text-slate-900">
+        Explore a verified demo case
+      </h3>
+
+      <p className="mt-1 text-xs leading-5 text-slate-500">
+        Want to explore ClaimThat without uploading files? Load one of the
+        verified SHP-1048 demo scenarios below.
+      </p>
+    </div>
+  </div>
+
+  <div className="mt-4 space-y-3">
+    <button
+      type="button"
+      onClick={loadClaimDemo}
+      className="w-full rounded-xl bg-blue-600 px-4 py-3 text-left text-white transition hover:bg-blue-700"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold">
+            Try Claim Demo
+          </p>
+
+          <p className="mt-1 text-xs text-blue-100">
+            320 expected · 288 received · $2,840 recoverable
+          </p>
+        </div>
+
+        <ChevronRight size={18} />
+      </div>
+    </button>
+
+    <button
+      type="button"
+      onClick={loadHumanReviewDemo}
+      className="w-full rounded-xl border border-orange-200 bg-white px-4 py-3 text-left transition hover:bg-orange-50"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <Users size={18} className="mt-0.5 text-orange-500" />
+
+          <div>
+            <p className="text-sm font-semibold text-slate-800">
+              Try Human Review Demo
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              320 received · $0 recoverable · conflicting photo evidence
+            </p>
+          </div>
+        </div>
+
+        <ChevronRight size={18} className="text-slate-400" />
+      </div>
+    </button>
+  </div>
+
+  <p className="mt-3 text-[11px] leading-4 text-slate-400">
+    Demo cases use previously verified sample evidence so the workflow can be
+    explored even if an external AI service is temporarily unavailable.
+  </p>
+</section>
 
               {/* CTA */}
               <button
